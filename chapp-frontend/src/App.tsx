@@ -25,25 +25,70 @@ function App() {
     if (currentUser) {
       // Handle new message creation
       wsService.onMessageCreate((message) => {
-        // For new messages, reload to get correct server IDs
-        loadMessages();
+        // Add message immediately for smooth UX, regardless of author
+        setMessages(prev => {
+          const currentMessages = Array.isArray(prev) ? prev : [];
+          
+          // Check if message already exists to avoid duplicates
+          const exists = currentMessages.some(msg => 
+            msg.id === message.id || 
+            (msg.time === message.time && msg.author === message.author && msg.content === message.content)
+          );
+          
+          if (!exists) {
+            return [...currentMessages, message].sort((a, b) => (a.time || 0) - (b.time || 0));
+          }
+          return currentMessages;
+        });
+
+        // If it's our own message, silently update IDs in background without re-render
+        if (message.author === currentUser) {
+          setTimeout(async () => {
+            try {
+              const freshMessages = await messageApi.getAllMessages();
+              setMessages(freshMessages);
+            } catch (error) {
+              console.error('Failed to refresh message IDs:', error);
+            }
+          }, 500); // Longer delay to ensure server processing
+        }
       });
 
       // Handle message deletion
       wsService.onMessageDelete((msgId) => {
+        console.log('WebSocket delete received for msgId:', msgId);
+        console.log('Current messages:', messages.map(m => ({ id: m.id, content: m.content })));
+        
         setMessages(prev => {
           const currentMessages = Array.isArray(prev) ? prev : [];
-          return currentMessages.filter(msg => msg.id !== msgId);
+          const filtered = currentMessages.filter(msg => {
+            const matches = msg.id === msgId;
+            if (matches) {
+              console.log('Found and removing message:', msg);
+            }
+            return !matches;
+          });
+          console.log('Messages after delete:', filtered.map(m => ({ id: m.id, content: m.content })));
+          return filtered;
         });
       });
 
       // Handle message editing
       wsService.onMessageEdit((msgId, content) => {
+        console.log('WebSocket edit received for msgId:', msgId, 'new content:', content);
+        console.log('Current messages:', messages.map(m => ({ id: m.id, content: m.content })));
+        
         setMessages(prev => {
           const currentMessages = Array.isArray(prev) ? prev : [];
-          return currentMessages.map(msg => 
-            msg.id === msgId ? { ...msg, content } : msg
-          );
+          const updated = currentMessages.map(msg => {
+            if (msg.id === msgId) {
+              console.log('Found and updating message:', msg, 'new content:', content);
+              return { ...msg, content };
+            }
+            return msg;
+          });
+          console.log('Messages after edit:', updated.map(m => ({ id: m.id, content: m.content })));
+          return updated;
         });
       });
 
@@ -146,7 +191,7 @@ function App() {
           <span className={`connection-status ${isConnected ? 'connected' : 'disconnected'}`}>
             {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
           </span>
-        </div>
+      </div>
       </header>
 
       <main className="chat-container">
@@ -172,7 +217,7 @@ function App() {
           Backend Features: WebSocket Real-time, REST API (GET, POST, PUT, DELETE)
         </p>
       </footer>
-    </div>
+      </div>
   );
 }
 

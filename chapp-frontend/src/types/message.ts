@@ -28,11 +28,13 @@ export interface WebSocketResponse {
   payload: any;     // lowercase to match server
 }
 
+// Actual server response format uses lowercase property names
 export interface DeleteMsgResPayload {
-  msgId: string;
+  msgId: string;  // Lowercase as per actual server response
 }
 
 export interface EditMsgResPayload {
-  msgId: string;
-  content: string;
+  msgId: string;     // Lowercase as per actual server response
+  content: string;   // Lowercase as per actual server response
+  author: string;    // Also included in server response
 } 

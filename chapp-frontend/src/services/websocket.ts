@@ -8,6 +8,7 @@ export class WebSocketService {
   private onConnectionChange: (connected: boolean) => void = () => {};
 
   connect(): void {
+    //this.ws = new WebSocket('wss://9cdb53b686a6.ngrok-free.app/ws/chat');
     this.ws = new WebSocket('ws://localhost:8080/ws/chat');
 
     this.ws.onopen = () => {
@@ -55,13 +56,13 @@ export class WebSocketService {
           case 'delete':
             const deletePayload = payload as DeleteMsgResPayload;
             console.log('Processing delete message:', deletePayload);
-            this.onMessageDeleted(deletePayload.msgId);
+            this.onMessageDeleted(deletePayload.msgId); // Using correct lowercase msgId
             break;
             
           case 'edit':
             const editPayload = payload as EditMsgResPayload;
             console.log('Processing edit message:', editPayload);
-            this.onMessageEdited(editPayload.msgId, editPayload.content);
+            this.onMessageEdited(editPayload.msgId, editPayload.content); // Using correct lowercase properties
             break;
             
           default:

@@ -1,12 +1,23 @@
 import type { Message, DeleteMsgPayload, EditMsgPayload } from '../types/message';
 
+//const API_BASE_URL = 'https://9cdb53b686a6.ngrok-free.app';
 const API_BASE_URL = 'http://localhost:8080';
+
+// Headers to bypass ngrok warning page
+const NGROK_HEADERS = {
+  'ngrok-skip-browser-warning': 'true',
+  'Content-Type': 'application/json',
+};
 
 export const messageApi = {
   // Get all messages
   getAllMessages: async (): Promise<Message[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/msg`);
+      const response = await fetch(`${API_BASE_URL}/msg`, {
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch messages');
       }
@@ -48,9 +59,7 @@ export const messageApi = {
   createMessage: async (message: Message): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/msg`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: NGROK_HEADERS,
       body: JSON.stringify(message),
     });
     if (!response.ok) {
@@ -62,9 +71,7 @@ export const messageApi = {
   deleteMessage: async (payload: DeleteMsgPayload): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/msg`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: NGROK_HEADERS,
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
@@ -76,9 +83,7 @@ export const messageApi = {
   updateMessage: async (payload: EditMsgPayload): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/msg`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: NGROK_HEADERS,
       body: JSON.stringify(payload),
     });
     if (!response.ok) {

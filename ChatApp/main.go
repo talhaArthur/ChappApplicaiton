@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 
 	"chatapp/routes"
 	"chatapp/storage"
@@ -11,6 +12,14 @@ import (
 func main() {
 
 	app := fiber.New()
+
+	// Add CORS middleware to allow cross-origin requests
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "*", // Allow all origins for development
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders:     "Origin,Content-Type,Accept,Authorization,ngrok-skip-browser-warning",
+		AllowCredentials: false,
+	}))
 
 	// defer func() {
 
